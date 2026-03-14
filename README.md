@@ -1,141 +1,207 @@
-# torrent_tools
-一款java编写的BT种子工具，支持多种功能，包括BT种子解析、生成、编辑、磁力生成等功能
-# 注意
-此程序使用JDK 17编写，如果使用低版本JDK可能会出现问题
-# 开始使用
-## 方式1
-使用idea打开 配置入口程序com.github.anicmv.App参数使用`--help`查看帮助
-## 方式2
-使用maven打包 运行命令：
-```
-java -jar target/torrent_tools-1.0-SNAPSHOT-jar-with-dependencies.jar --help
-```
-目前所支持的命令行参数如下:
-```
-TorrentTools CLI
-Tools for inspecting, creating and modifying bittorrent metafiles.
+# Torrent Tools
 
-Usage: torrent [-hV] [COMMAND]
+A modern command-line BitTorrent tool for inspecting, creating, and modifying torrent metafiles.
 
-Options:
-  -h, --help      Show this help message and exit.
-  -V, --version   Print version information and exit.
+## Features
 
-SubCommands:
-  info    General information about bittorrent metafiles.
-  edit    Edit the torrent file.
-  create  Create a torrent file for the specified file.
-  magnet  Getting a magnetic link to a seed file
+- **Info**: Display detailed information about torrent files
+- **Create**: Generate new torrent files from files or directories
+- **Edit**: Modify existing torrent files
+- **Magnet**: Generate magnet URIs from torrent files
 
-Developed by ❤️anicmv :)
-```
-子命令`info`:
-```
-General information about bittorrent metafiles.
-Usage: torrent info [-hV] [--raw] <inputFile>
-      <inputFile>   .torrent file path.
+## Requirements
 
-Options:
-  -h, --help        Show this help message and exit.
-      --raw         Print the metafile data formatted as JSON.
-  -V, --version     Print version information and exit.
+- JDK 17 or higher
+- Maven 3.6+
+- (Optional) GraalVM for native image compilation
+
+## Build
+
+### Build JAR
+
+```bash
+mvn clean package
 ```
 
-子命令`edit`:
-```
-Edit the torrent file.
-Usage: torrent edit [-hV] [--no-announce] [--no-created-by]
-                    [--no-creation-date] [--no-publisher] [--no-source]
-                    [-a=<announceUrl>] [-c=<comment>] [--create-by=<createBy>]
-                    [-d=<creationDate>] [-n=<torrentName>] [-o=<outputPath>]
-                    [-p=<privateFlag>] [--publisher=<publisher>] [-s=<source>]
-                    <inputFile>
-      <inputFile>            edit the torrent file.
+This creates:
+- `target/torrent-tools-1.0.0.jar` - Main JAR
+- `target/torrent-tools-1.0.0-jar-with-dependencies.jar` - Fat JAR with all dependencies
 
-Options:
-  -a, --announce=<announceUrl>
-                             Add one or multiple announces urls.
-  -c, --comment=<comment>    Add a comment.
-      --create-by=<createBy> Override the value of the created by field.
-  -d, --creation-date=<creationDate>
-                             Override the value of the creation date field as
-                               ISO-8601 time or POSIX time.
-  -h, --help                 Show this help message and exit.
-  -n, --name=<torrentName>   Set the name of the torrent. This changes the
-                               filename for single file torrents.
-      --no-announce          Do not include the announce tag.
-      --no-created-by        Do not include the name and version of this
-                               program.
-      --no-creation-date     Do not include the creation date.
-      --no-publisher         Do not include the publisher.
-      --no-source            Do not include the source tag.
-  -o, --output=<outputPath>  Set the filename and/or output directory of the
-                               created file.
-                             [default: <name>.torrent]
-                             This will overwrite the existing file if the name
-                               is the same.
-                             Use a path with trailing slash to only set the
-                               output directory.
+### Build Native Executable (Optional)
 
-  -p, --private=<privateFlag>
-                             Set the private flag to disable DHT and PEX.
-      --publisher=<publisher>
-                             Override the value of the publisher field.
-  -s, --source=<source>      Add a source tag to facilitate cross-seeding.
-  -V, --version              Print version information and exit.
+Requires GraalVM with native-image support:
 
+```bash
+mvn clean package -Pnative
 ```
 
-子命令`create`:
-```
-Create a torrent file for the specified file.
-Usage: torrent create [-hpV] [--no-created-by] [--no-creation-date]
-                      [--no-publisher] [--no-source] [-a=<announceUrl>]
-                      [-c=<comment>] [--created-by=<createdBy>]
-                      [-d=<creationDate>] [-l=<pieceLength>] [-n=<torrentName>]
-                      [-o=<outputPath>] [--publisher=<publisher>] [-s=<source>]
-                      <inputFile>
-      <inputFile>            The file to create a torrent for.
+This creates a native executable at `target/torrent` (Linux/macOS) or `target/torrent.exe` (Windows).
 
-Options:
-  -a, --announce=<announceUrl>
-                             Add one or multiple announces urls.
-  -c, --comment=<comment>    Add a comment.
-      --created-by=<createdBy>
-                              Override the value of the created by field.
-  -d, --creation-date=<creationDate>
-                             Override the value of the creation date field as
-                               ISO-8601 time or POSIX time.
-  -h, --help                 Show this help message and exit.
-  -l, --piece-size=<pieceLength>
-                             Set the piece size. When no unit is specified
-                               block size will be either 2^<n> bytes, or <n>
-                               bytes if n is larger or equal to 16384. Piece
-                               size must be a power of two in range [16K, 64M].
-                               Leave empty or set to auto to determine by total
-                               file size. [default: auto]
-  -n, --name=<torrentName>   Set the name of the torrent. This changes the
-                               filename for single file torrents.
-      --no-created-by        Do not include the name and version of this
-                               program.
-      --no-creation-date     Do not include the creation date.
-      --no-publisher         Do not include the publisher.
-      --no-source            Do not include the source tag.
-  -o, --output=<outputPath>  Set the filename and/or output directory of the
-                               created file. [default: <name>.torrent]
-  -p, --private              Set the private flag to disable DHT and PEX.
-      --publisher=<publisher>
-                             Add a source tag to facilitate cross-seeding.
-  -s, --source=<source>      Add a source tag to facilitate cross-seeding.
-  -V, --version              Print version information and exit.
-```
-子命令`magnet`:
-```
-Getting a magnetic link to a seed file
-Usage: torrent magnet [-hV] <inputFile>
-      <inputFile>   .torrent file path.
+## Usage
 
-Options:
-  -h, --help        Show this help message and exit.
-  -V, --version     Print version information and exit.
+### Using Fat JAR
+
+```bash
+java -jar target/torrent-tools-1.0.0-jar-with-dependencies.jar --help
 ```
+
+### Using Native Executable
+
+```bash
+./target/torrent --help
+```
+
+### Commands
+
+#### Help
+
+```bash
+torrent --help
+```
+
+#### View Torrent Info
+
+```bash
+# Basic info
+torrent info example.torrent
+
+# Raw JSON output
+torrent info --raw example.torrent
+```
+
+#### Create Torrent
+
+```bash
+# Create from a file
+torrent create /path/to/file
+
+# Create from a directory
+torrent create /path/to/directory
+
+# With custom announce URL
+torrent create -a "https://tracker.example.com/announce" /path/to/file
+
+# With custom options
+torrent create \
+  -o output.torrent \
+  -a "https://tracker1.com/announce,https://tracker2.com/announce" \
+  -c "My comment" \
+  -n "Custom Name" \
+  -l 256K \
+  -p \
+  /path/to/file
+```
+
+**Create Options:**
+- `-o, --output`: Output file path (default: `<name>.torrent`)
+- `-a, --announce`: Announce URL(s), comma-separated
+- `-c, --comment`: Torrent comment
+- `-n, --name`: Custom torrent name
+- `-l, --piece-size`: Piece size (e.g., `256K`, `1M`, `auto`)
+- `-p, --private`: Set private flag
+- `-s, --source`: Source identifier
+- `--created-by`: Creator name
+- `--publisher`: Publisher name
+- `-d, --creation-date`: Creation date (ISO-8601 or POSIX time)
+- `--no-created-by`: Omit creator field
+- `--no-creation-date`: Omit creation date
+- `--no-publisher`: Omit publisher field
+- `--no-source`: Omit source field
+
+#### Edit Torrent
+
+```bash
+# Edit announce URL
+torrent edit -a "https://new-tracker.com/announce" example.torrent
+
+# Edit multiple fields
+torrent edit \
+  -c "New comment" \
+  -n "New Name" \
+  -p yes \
+  -o edited.torrent \
+  example.torrent
+
+# Remove fields
+torrent edit \
+  --no-announce \
+  --no-creation-date \
+  example.torrent
+```
+
+**Edit Options:**
+- `-o, --output`: Output file path
+- `-a, --announce`: New announce URL(s)
+- `-c, --comment`: New comment
+- `-n, --name`: New torrent name
+- `-p, --private`: Set private flag (`yes`/`no`)
+- `-s, --source`: New source
+- `--create-by`: New creator name
+- `--publisher`: New publisher
+- `-d, --creation-date`: New creation date
+- `--no-announce`: Remove announce information
+- `--no-created-by`: Remove creator field
+- `--no-creation-date`: Remove creation date
+- `--no-publisher`: Remove publisher field
+- `--no-source`: Remove source field
+
+#### Generate Magnet URI
+
+```bash
+torrent magnet example.torrent
+```
+
+## Project Structure
+
+```
+src/
+├── main/
+│   └── java/
+│       └── com/github/anicmv/torrenttools/
+│           ├── TorrentToolsApplication.java  # Main entry point
+│           ├── command/                       # CLI commands
+│           │   ├── InfoCommand.java
+│           │   ├── CreateCommand.java
+│           │   ├── EditCommand.java
+│           │   └── MagnetCommand.java
+│           ├── codec/                         # Bencode encoding/decoding
+│           │   ├── BEncodeCodec.java
+│           │   ├── BEncodeInputStream.java
+│           │   └── BEncodeOutputStream.java
+│           ├── meta/                          # Data models
+│           │   └── TorrentInfo.java
+│           ├── service/                       # Business logic
+│           │   ├── TorrentService.java
+│           │   ├── TorrentCreatorService.java
+│           │   └── TorrentEditorService.java
+│           └── util/                          # Utilities
+│               └── TreePrinter.java
+└── test/
+    └── java/
+        └── com/github/anicmv/torrenttools/
+            └── codec/
+                └── BEncodeCodecTest.java
+```
+
+## Development
+
+### Run with Maven
+
+```bash
+# Run with arguments
+mvn exec:java -Dexec.mainClass="com.github.anicmv.torrenttools.TorrentToolsApplication" -Dexec.args="info example.torrent"
+```
+
+### Run Tests
+
+```bash
+mvn test
+```
+
+## License
+
+MIT License
+
+## Author
+
+Developed with ❤️ by anicmv

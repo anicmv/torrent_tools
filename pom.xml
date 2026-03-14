@@ -1,78 +1,136 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.github.anicmv</groupId>
-    <artifactId>torrent_tools</artifactId>
-    <version>0.0.1</version>
+    <artifactId>torrent-tools</artifactId>
+    <version>1.0.0</version>
     <packaging>jar</packaging>
 
-    <name>torrent_tools</name>
-    <description>torrent_tools</description>
+    <name>torrent-tools</name>
+    <description>A command-line BitTorrent tool for inspecting, creating and modifying torrent metafiles</description>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
-        <junit.version>4.13.2</junit.version>
-        <maven-compiler-plugin-version>3.13.0</maven-compiler-plugin-version>
-        <picocli.version>4.7.6</picocli.version>
-        <lombok.version>1.18.32</lombok.version>
-        <hutool.version>5.8.28</hutool.version>
+        <maven.compiler.release>25</maven.compiler.release>
+        <picocli.version>4.7.7</picocli.version>
+        <lombok.version>1.18.44</lombok.version>
+        <hutool.version>5.8.43</hutool.version>
+        <junit.version>5.11.4</junit.version>
+        <graalvm.version>0.10.4</graalvm.version>
+        <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
+        <maven-assembly-plugin.version>3.7.1</maven-assembly-plugin.version>
+        <maven-surefire-plugin.version>3.5.2</maven-surefire-plugin.version>
+        <native-maven-plugin.version>0.10.4</native-maven-plugin.version>
     </properties>
+
     <dependencies>
+        <!-- Picocli for CLI -->
         <dependency>
             <groupId>info.picocli</groupId>
             <artifactId>picocli</artifactId>
             <version>${picocli.version}</version>
         </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>${junit.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <version>${maven-compiler-plugin-version}</version>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-assembly-plugin -->
-        <dependency>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-assembly-plugin</artifactId>
-            <version>3.7.1</version>
-        </dependency>
+
+        <!-- Lombok for reducing boilerplate -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>${lombok.version}</version>
             <scope>provided</scope>
         </dependency>
+
+        <!-- Hutool for utilities -->
         <dependency>
             <groupId>cn.hutool</groupId>
             <artifactId>hutool-all</artifactId>
             <version>${hutool.version}</version>
         </dependency>
+        
+        <!-- Gson for JSON serialization -->
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.11.0</version>
+        </dependency>
+
+        <!-- JUnit 5 for testing -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
+
     <build>
         <plugins>
+            <!-- Compiler Plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven-compiler-plugin.version}</version>
+                <configuration>
+                    <release>17</release>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </path>
+                        <path>
+                            <groupId>info.picocli</groupId>
+                            <artifactId>picocli-codegen</artifactId>
+                            <version>${picocli.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+                <!-- 仅在 default-compile（主源码）阶段传递 -Aproject 参数 -->
+                <executions>
+                    <execution>
+                        <id>default-compile</id>
+                        <configuration>
+                            <compilerArgs>
+                                <arg>-Aproject=${project.groupId}/${project.artifactId}</arg>
+                            </compilerArgs>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Surefire Plugin for JUnit 5 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${maven-surefire-plugin.version}</version>
+                <configuration>
+                    <includes>
+                        <include>**/*Test.java</include>
+                        <include>**/*Tests.java</include>
+                    </includes>
+                </configuration>
+            </plugin>
+
+            <!-- Assembly Plugin for fat JAR -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
+                <version>${maven-assembly-plugin.version}</version>
                 <configuration>
                     <descriptorRefs>
                         <descriptorRef>jar-with-dependencies</descriptorRef>
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>com.github.anicmv.App</mainClass>
+                            <mainClass>com.github.anicmv.torrenttools.TorrentToolsApplication</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
                 <executions>
                     <execution>
-                        <id>assemble-all</id>
+                        <id>make-assembly</id>
                         <phase>package</phase>
                         <goals>
                             <goal>single</goal>
@@ -80,6 +138,46 @@
                     </execution>
                 </executions>
             </plugin>
+
+            <!-- GraalVM Native Image Plugin -->
+            <plugin>
+                <groupId>org.graalvm.buildtools</groupId>
+                <artifactId>native-maven-plugin</artifactId>
+                <version>${native-maven-plugin.version}</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <mainClass>com.github.anicmv.torrenttools.TorrentToolsApplication</mainClass>
+                    <imageName>torrent</imageName>
+                    <buildArgs>
+                        <buildArg>--no-fallback</buildArg>
+                    </buildArgs>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <!-- Profile for native image compilation -->
+        <profile>
+            <id>native</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.graalvm.buildtools</groupId>
+                        <artifactId>native-maven-plugin</artifactId>
+                        <version>${native-maven-plugin.version}</version>
+                        <executions>
+                            <execution>
+                                <id>build-native</id>
+                                <goals>
+                                    <goal>compile-no-fork</goal>
+                                </goals>
+                                <phase>package</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
